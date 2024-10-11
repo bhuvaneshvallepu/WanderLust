@@ -22,7 +22,7 @@ const validateListing=(req,res,next)=>{
 
 //Index route
 
-router.get("/listings", async (req, res, next) => {
+router.get("/", async (req, res, next) => {
     try {
         const allListings = await Listing.find({});
         res.render("listings/index.ejs", { allListings });
@@ -40,18 +40,21 @@ router.get("/listings", async (req, res, next) => {
    //show Route
    router.get("/:id",wrapAsync(async(req,res)=>{
         let {id} =req.params;
-       const listing= await Listing.findById(id).populate("reviews");
+       const listing= await Listing.findById(id).populate("reviews")
+       .populate("owner");
        if(!listing){
         req.flash("error","Listing you requested for doesnot exsist!");
        res.redirect("/listings");
     }
+    
        res.render("listings/show.ejs",{listing});
    }));
    
    //create route
-   router.post("/",(async(req,res,next)=>{
+   router.post("/",isLoggedIn,(async(req,res,next)=>{
        
       const newListing=new Listing(req.body.listing);
+      newListing.owner=req.user._id;
       
       await newListing.save();
       req.flash("success","New Listing Created!");
@@ -61,7 +64,7 @@ router.get("/listings", async (req, res, next) => {
 
    
 //Edit Route
-router.get("/:id/edit", wrapAsync(async (req, res) => {
+router.get("/:id/edit",isLoggedIn, wrapAsync(async (req, res) => {
     let { id } = req.params;
     const listing = await Listing.findById(id);
     if(!listing){
@@ -73,7 +76,7 @@ router.get("/:id/edit", wrapAsync(async (req, res) => {
 );
 
 //update Route
-router.put("/:id",(async(req,res)=>{
+router.put("/:id",isLoggedIn,(async(req,res)=>{
     const {id}=req.params;
     await Listing.findByIdAndUpdate(id,{...req.body.listing});
     req.flash("success","New Listing Updated!");
