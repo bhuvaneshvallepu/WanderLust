@@ -85,6 +85,14 @@ app.use((err, req, res, next) => {
     console.log(err)
 });
 
+app.use((req,res,next) => {
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    res.locals.currUser=req.user;
+    console.log(req.user)
+    next();
+  });
+
 
 app.listen(8080,()=>{
     console.log("server is listening to port 8080");
