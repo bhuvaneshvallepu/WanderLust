@@ -1,7 +1,7 @@
 <% layout("/layouts/boilerplate") -%>
 <script>
     const mapToken = "<%= process.env.MAP_TOKEN %>";
-    const coordinates = " <%- JSON.stringify(listing.geometry.coordinates) %>";
+
 </script>
 <body>
     <div class="row mt-3">
@@ -12,11 +12,11 @@
                 <img src="<%= listing.image.url %>" class="card-img-top show-img"  alt="listing_image">
                 <div class="card-body">
                   <p class="card-text">
-                    <p>Owned by : <i><b><%= listing.owner.username %></b></i></p>
+                    <p>Owned by : <i><b><%= listing.owner %></b></i></p>
                     <%= listing.description%> <br>
                     &#8377; <%= listing.price.toLocaleString("en-in") %> <br>
                     <%= listing.location %>    <br>
-                    <%= listing.contry %> <br>
+                    <%= listing.country %> <br>
                  </p>
                 </div>
               </div>
