@@ -1,7 +1,7 @@
 const Listing = require("../models/listing.js");
 const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
 const mapToken = process.env.MAP_TOKEN;
-const goecodingClient = mbxGeocoding({ accessToken: mapToken });
+const geocodingClient = mbxGeocoding({ accessToken: mapToken });
 
 module.exports.indexRoute = async (req, res) => {
   const allListings = await Listing.find({});
@@ -12,8 +12,26 @@ module.exports.renderNewForm = async (req, res) => {
   res.render("listings/new.ejs");
 };
 
+module.exports.showRoute = async (req, res) => {
+  let { id } = req.params;
+  const listing = await Listing.findById(id)
+    .populate({ path: "reviews", populate: { path: "author" } })
+    .populate("owner");
+  if (!listing) {
+    req.flash("deleted", "Listing Does Not Exists ");
+    res.redirect("/listings");
+  }
+  let response = await geocodingClient.forwardGeocode({
+    query: listing.location,
+    limit: 1
+  })
+  .send();
+  listing.geometry = response.body.features[0].geometry;
+  res.render("listings/show.ejs", { listing });
+};
+
 module.exports.createRoute = async (req, res, next) => {
-  let response = await goecodingClient
+  let response = await geocodingClient
     .forwardGeocode({
       query: req.body.listing.location,
       limit: 1,
@@ -31,17 +49,6 @@ module.exports.createRoute = async (req, res, next) => {
   res.redirect("/listings");
 };
 
-module.exports.showRoute = async (req, res) => {
-  let { id } = req.params;
-  const listing = await Listing.findById(id)
-    .populate({ path: "reviews", populate: { path: "author" } })
-    .populate("owner");
-  if (!listing) {
-    req.flash("deleted", "Listing Does Not Exists ");
-    res.redirect("/listings");
-  }
-  res.render("listings/show.ejs", { listing });
-};
 
 module.exports.renderEditForm = async (req, res) => {
   let { id } = req.params;
@@ -60,7 +67,9 @@ module.exports.updateRoute = async (req, res) => {
   if (typeof req.file !== "undefined") {
     let url = req.file.path;
     let filename = req.file.filename;
+    const newListing=new Listing(req.body.Listing)
     listing.image = { url, filename };
+    newListing.geometry=response.body.features[0].geometry;
     await listing.save();
   }
 
