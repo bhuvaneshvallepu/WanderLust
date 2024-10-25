@@ -42,31 +42,33 @@ app.engine('ejs',ejsMate);
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname,"/public")));
-const sessionOptions={
-    secret:"mysupersecretcode",
-    resave:false,
-    saveUninitialized:true,
-    cookie:{
-        expires:Date.now()+7*24*60*60*1000,
-        maxAge:7*24*60*60*1000,
-       httpOnly:true,
-    },
-}
 
 // app.get("/",(req,res)=>{
 //     res.send("root is working");
 // });
 const store = MongoStore.create({
-    mongoUrl: dbUrl,
-    crypto: {
-      secret: process.env.secret,
-    },
-    touchAfter: 24 * 3600,
-  });
-  
-  store.on("error", () => {
-    console.log("mongodb session store error", err);
-  });
+  mongoUrl : dbUrl,
+  crypto: {  // prefered to use for encryption
+      secret: process.env.SECRET,
+  },
+  touchAfter: 24* 3600,
+});
+
+store.on("error", () => {
+  console.log("ERROR in MONGO SESSION STORE",err);
+});
+
+const sessionOptions = {
+  store,
+  secret: process.env.SECRET,
+  resave: false,
+  saveUninitialized : true,
+  cookie: {
+      expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      httpOnly: true
+  },
+};
   
 
 app.use(session(sessionOptions));
