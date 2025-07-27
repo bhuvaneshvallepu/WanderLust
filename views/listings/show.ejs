@@ -2,6 +2,8 @@
 <script>
     const mapToken = "<%= process.env.MAP_TOKEN %>";
     const coordinates = "<%-JSON.stringify(listing.geometry.coordinates) %>";
+    const listing = await Listing.findById(req.params.id).populate('owner');
+
 </script>
 <body>
     <div class="row mt-3">

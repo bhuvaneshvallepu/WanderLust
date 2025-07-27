@@ -23,9 +23,10 @@ const listingSchema = new Schema({
     },
   ],
   owner: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }
+  ,
    geometry: {
     type: {
       type: String, //don't do '{location: {type: String} },
